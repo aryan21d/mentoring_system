@@ -69,13 +69,51 @@ if uploaded_file is not None:
     df["Risk_Level"] = df["SRI"].apply(risk)
 
     # ---------------- MENTOR ----------------
-    mentors = {
-        "High Risk": "Academic Mentor",
-        "Moderate Risk": "Skill Mentor",
-        "Low Risk": "Career Mentor"
-    }
+    # ---------------- LOAD MENTORS ----------------
+mentors = pd.read_csv("mentors.csv")
 
-    df["Assigned_Mentor"] = df["Risk_Level"].map(mentors)
+# ---------------- MAP NEED ----------------
+def get_need(risk):
+    if risk == "High Risk":
+        return "Academic"
+    elif risk == "Moderate Risk":
+        return "Skill"
+    else:
+        return "Career"
+
+df["Need"] = df["Risk_Level"].apply(get_need)
+
+# ---------------- MATCH MENTOR ----------------
+# ---------------- LOAD MENTORS ----------------
+mentors = pd.read_csv("mentors.csv")
+
+# ---------------- MAP NEED ----------------
+def get_need(risk):
+    if risk == "High Risk":
+        return "Academic"
+    elif risk == "Moderate Risk":
+        return "Skill"
+    else:
+        return "Career"
+
+df["Need"] = df["Risk_Level"].apply(get_need)
+
+# ---------------- MATCH MENTOR ----------------
+def match_mentor(need):
+    eligible = mentors[mentors["expertise"] == need].copy()
+
+    # filter available mentors
+    eligible = eligible[eligible["current_students"] < eligible["max_students"]]
+
+    if len(eligible) == 0:
+        return "No Mentor Available"
+
+    # pick least busy mentor
+    best = eligible.sort_values("current_students").iloc[0]
+
+    return best["mentor_name"]
+
+df["Assigned_Mentor"] = df["Need"].apply(match_mentor)
 
     # ---------------- INTERVENTION ----------------
     interventions = {
