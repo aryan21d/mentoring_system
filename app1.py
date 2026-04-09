@@ -122,31 +122,31 @@ interventions = {
         "Low Risk": "Career guidance"
     }
 
-    df["Intervention"] = df["Risk_Level"].map(interventions)
+df["Intervention"] = df["Risk_Level"].map(interventions)
 
     # ---------------- OUTPUT ----------------
-    st.subheader("🎯 Final Results")
-    st.dataframe(df)
+st.subheader("🎯 Final Results")
+st.dataframe(df)
 
     # ---------------- METRICS ----------------
-    col1, col2, col3 = st.columns(3)
+col1, col2, col3 = st.columns(3)
 
-    col1.metric("Total Students", len(df))
-    col2.metric("Avg SRI", round(df["SRI"].mean(), 2))
-    col3.metric("High Risk", (df["Risk_Level"] == "High Risk").sum())
+col1.metric("Total Students", len(df))
+col2.metric("Avg SRI", round(df["SRI"].mean(), 2))
+col3.metric("High Risk", (df["Risk_Level"] == "High Risk").sum())
 
     # ---------------- CHART ----------------
-    st.subheader("📊 Risk Distribution")
+st.subheader("📊 Risk Distribution")
 
-    fig, ax = plt.subplots()
-    df["Risk_Level"].value_counts().plot(kind="bar", ax=ax)
+fig, ax = plt.subplots()
+df["Risk_Level"].value_counts().plot(kind="bar", ax=ax)
 
-    st.pyplot(fig)
+st.pyplot(fig)
 
     # ---------------- DOWNLOAD ----------------
-    csv = df.to_csv(index=False).encode('utf-8')
+csv = df.to_csv(index=False).encode('utf-8')
 
-    st.download_button(
+st.download_button(
         "Download Report",
         data=csv,
         file_name="final_report.csv",
