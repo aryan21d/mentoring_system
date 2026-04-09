@@ -116,7 +116,7 @@ def match_mentor(need):
 df["Assigned_Mentor"] = df["Need"].apply(match_mentor)
 
     # ---------------- INTERVENTION ----------------
-    interventions = {
+interventions = {
         "High Risk": "Weekly mentoring + academic support",
         "Moderate Risk": "Skill development sessions",
         "Low Risk": "Career guidance"
