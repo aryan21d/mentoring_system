@@ -97,7 +97,7 @@ if uploaded_file is not None and mentor_file is not None:
 
         best = available.sort_values("current_students").iloc[0]
         return best["mentor_name"]
-    df["assigned_mentor"] = df["need"].apply(match_mentor)
+    df["assigned_mentor"] = df["Need"].apply(match_mentor)
     # ---------------- INTERVENTION ----------------
     interventions = {
         "High Risk": "Weekly mentoring + academic support",
