@@ -81,16 +81,23 @@ if uploaded_file is not None and mentor_file is not None:
 
     # ---------------- MATCH MENTOR ----------------
     def match_mentor(need):
-        eligible = mentors[mentors["expertise"] == need].copy()
-        eligible = eligible[eligible["current_students"] < eligible["max_students"]]
+    eligible = mentors[mentors["expertise"] == need].copy()
 
-        if len(eligible) == 0:
-            return "No Mentor Available"
+    if len(eligible) == 0:
+        return "No Mentor (No Expertise Match)"
 
+    # allow even full mentors if needed
+    available = eligible[
+        eligible["current_students"] < eligible["max_students"]
+    ]
+
+    if len(available) == 0:
+        # fallback: assign least loaded mentor anyway
         best = eligible.sort_values("current_students").iloc[0]
-        return best["mentor_name"]
+        return best["mentor_name"] + " (Overloaded)"
 
-    df["Assigned_Mentor"] = df["Need"].apply(match_mentor)
+    best = available.sort_values("current_students").iloc[0]
+    return best["mentor_name"]
 
     # ---------------- INTERVENTION ----------------
     interventions = {
