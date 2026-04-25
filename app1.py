@@ -7,8 +7,9 @@ st.set_page_config(page_title="AI Mentoring System", page_icon="🎓", layout="w
 st.title("🎓 AI Powered Student Mentoring System")
 
 uploaded_file = st.sidebar.file_uploader("Upload Student CSV", type=["csv"])
+mentor_file = st.sidebar.file_uploader("Upload Mentor CSV", type=["csv"])
 
-if uploaded_file is not None:
+if uploaded_file is not None and mentor_file is not None:
 
     df = pd.read_csv(uploaded_file)
 
