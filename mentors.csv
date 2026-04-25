@@ -1,0 +1,13 @@
+mentor_id,mentor_name,expertise,max_students,current_students,availability,mentor_rating,years_experience
+M1,Rahul Sharma,Academic,10,6,High,4.6,5
+M2,Priya Verma,Wellness,8,4,Medium,4.4,4
+M3,Aman Singh,Career,12,9,Medium,4.5,6
+M4,Neha Patil,Productivity,10,5,High,4.7,5
+M5,Karan Mehta,Academic,8,3,High,4.8,7
+M6,Anjali Desai,Wellness,10,7,Low,4.2,3
+M7,Rohit Joshi,Career,10,6,High,4.6,6
+M8,Sneha Kulkarni,Productivity,9,2,Medium,4.5,4
+M9,Arjun Nair,Academic,12,10,Low,4.1,2
+M10,Meera Iyer,Career,8,4,High,4.9,8
+M11,Siddharth Rao,Wellness,7,2,High,4.7,6
+M12,Pooja Jain,Productivity,11,8,Medium,4.3,4
