@@ -66,38 +66,48 @@ if uploaded_file is not None and mentor_file is not None:
     df["Risk_Level"] = df["SRI"].apply(risk)
 
     # ---------------- LOAD MENTORS ----------------
-    mentors = pd.read_csv("mentors.csv")
+   # ---------------- LOAD MENTORS ----------------
+mentors = pd.read_csv(mentor_file)
 
-    # ---------------- MAP NEED ----------------
-    def get_need(risk):
-        if risk == "High Risk":
-            return "Academic"
-        elif risk == "Moderate Risk":
-            return "Skill"
-        else:
-            return "Career"
+# CLEAN COLUMN NAMES
+mentors.columns = mentors.columns.str.strip().str.lower()
 
-    df["Need"] = df["Risk_Level"].apply(get_need)
+# ---------------- MAP NEED ----------------
+def get_need(risk):
+    if risk == "High Risk":
+        return "Academic"
+    elif risk == "Moderate Risk":
+        return "Skill"
+    else:
+        return "Career"
 
-    # ---------------- MATCH MENTOR ----------------
-    def match_mentor(need):
-        eligible = mentors[mentors["expertise"] == need].copy()
-        if len(eligible) == 0:
-           return "No Mentor (No Expertise Match)"
+df["Need"] = df["Risk_Level"].apply(get_need)
 
-    # allow even full mentors if needed
-        available = eligible[
+# FIX CASE MATCH
+mentors["expertise"] = mentors["expertise"].str.strip().str.capitalize()
+df["Need"] = df["Need"].str.strip().str.capitalize()
+
+# ---------------- MATCH MENTOR ----------------
+def match_mentor(need):
+    eligible = mentors[mentors["expertise"] == need].copy()
+
+    if len(eligible) == 0:
+        return "No Mentor (No Match)"
+
+    # filter available mentors
+    available = eligible[
         eligible["current_students"] < eligible["max_students"]
-         ]
+    ]
 
-        if len(available) == 0:
-        # fallback: assign least loaded mentor anyway
-           best = eligible.sort_values("current_students").iloc[0]
-           return best["mentor_name"] + " (Overloaded)"
+    if len(available) == 0:
+        # fallback
+        best = eligible.sort_values("current_students").iloc[0]
+        return best["mentor_name"] + " (Overloaded)"
 
-        best = available.sort_values("current_students").iloc[0]
-        return best["mentor_name"]
-    df["assigned_mentor"] = df["Need"].apply(match_mentor)
+    best = available.sort_values("current_students").iloc[0]
+    return best["mentor_name"]
+
+df["assigned_mentor"] = df["Need"].apply(match_mentor)
     # ---------------- INTERVENTION ----------------
     interventions = {
         "High Risk": "Weekly mentoring + academic support",
