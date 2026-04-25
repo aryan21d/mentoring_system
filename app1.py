@@ -83,7 +83,7 @@ if uploaded_file is not None and mentor_file is not None:
     def match_mentor(need):
         eligible = mentors[mentors["expertise"] == need].copy()
         if len(eligible) == 0:
-        return "No Mentor (No Expertise Match)"
+           return "No Mentor (No Expertise Match)"
 
     # allow even full mentors if needed
         available = eligible[
