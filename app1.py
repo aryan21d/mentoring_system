@@ -81,7 +81,7 @@ if uploaded_file is not None and mentor_file is not None:
 
     # ---------------- MATCH MENTOR ----------------
     def match_mentor(need):
-        eligible = mentors[mentors["Domain_Expertise"] == need].copy()
+        eligible = mentors[mentors["expertise"] == need].copy()
         eligible = eligible[eligible["current_students"] < eligible["max_students"]]
 
         if len(eligible) == 0:
