@@ -2,18 +2,26 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
+# ---------------- PAGE CONFIG ----------------
 st.set_page_config(page_title="AI Mentoring System", page_icon="🎓", layout="wide")
 
 st.title("🎓 AI Powered Student Mentoring System")
 
+# ---------------- FILE UPLOAD ----------------
 uploaded_file = st.sidebar.file_uploader("Upload Student CSV", type=["csv"])
 mentor_file = st.sidebar.file_uploader("Upload Mentor CSV", type=["csv"])
 
 if uploaded_file is not None and mentor_file is not None:
 
+    # ---------------- LOAD DATA ----------------
     df = pd.read_csv(uploaded_file)
+    mentors = pd.read_csv(mentor_file)
 
-    st.subheader("📄 Raw Data")
+    # CLEAN COLUMN NAMES
+    df.columns = df.columns.str.strip()
+    mentors.columns = mentors.columns.str.strip().str.lower()
+
+    st.subheader("📄 Raw Student Data")
     st.dataframe(df)
 
     # ---------------- APS ----------------
@@ -65,49 +73,41 @@ if uploaded_file is not None and mentor_file is not None:
 
     df["Risk_Level"] = df["SRI"].apply(risk)
 
-    # ---------------- LOAD MENTORS ----------------
-   # ---------------- LOAD MENTORS ----------------
-mentors = pd.read_csv(mentor_file)
+    # ---------------- MAP NEED ----------------
+    def get_need(risk):
+        if risk == "High Risk":
+            return "Academic"
+        elif risk == "Moderate Risk":
+            return "Skill"
+        else:
+            return "Career"
 
-# CLEAN COLUMN NAMES
-mentors.columns = mentors.columns.str.strip().str.lower()
+    df["Need"] = df["Risk_Level"].apply(get_need)
 
-# ---------------- MAP NEED ----------------
-def get_need(risk):
-    if risk == "High Risk":
-        return "Academic"
-    elif risk == "Moderate Risk":
-        return "Skill"
-    else:
-        return "Career"
+    # FIX CASE MATCH
+    mentors["expertise"] = mentors["expertise"].str.strip().str.capitalize()
+    df["Need"] = df["Need"].str.strip().str.capitalize()
 
-df["Need"] = df["Risk_Level"].apply(get_need)
+    # ---------------- MATCH MENTOR ----------------
+    def match_mentor(need):
+        eligible = mentors[mentors["expertise"] == need].copy()
 
-# FIX CASE MATCH
-mentors["expertise"] = mentors["expertise"].str.strip().str.capitalize()
-df["Need"] = df["Need"].str.strip().str.capitalize()
+        if len(eligible) == 0:
+            return "No Mentor (No Match)"
 
-# ---------------- MATCH MENTOR ----------------
-def match_mentor(need):
-    eligible = mentors[mentors["expertise"] == need].copy()
+        available = eligible[
+            eligible["current_students"] < eligible["max_students"]
+        ]
 
-    if len(eligible) == 0:
-        return "No Mentor (No Match)"
+        if len(available) == 0:
+            best = eligible.sort_values("current_students").iloc[0]
+            return best["mentor_name"] + " (Overloaded)"
 
-    # filter available mentors
-    available = eligible[
-        eligible["current_students"] < eligible["max_students"]
-    ]
+        best = available.sort_values("current_students").iloc[0]
+        return best["mentor_name"]
 
-    if len(available) == 0:
-        # fallback
-        best = eligible.sort_values("current_students").iloc[0]
-        return best["mentor_name"] + " (Overloaded)"
+    df["Assigned_Mentor"] = df["Need"].apply(match_mentor)
 
-    best = available.sort_values("current_students").iloc[0]
-    return best["mentor_name"]
-
-df["assigned_mentor"] = df["Need"].apply(match_mentor)
     # ---------------- INTERVENTION ----------------
     interventions = {
         "High Risk": "Weekly mentoring + academic support",
@@ -117,34 +117,39 @@ df["assigned_mentor"] = df["Need"].apply(match_mentor)
 
     df["Intervention"] = df["Risk_Level"].map(interventions)
 
-    # ---------------- OUTPUT ----------------
+    # ---------------- FINAL OUTPUT ----------------
     st.subheader("🎯 Final Results")
     st.dataframe(df)
 
     # ---------------- METRICS ----------------
-    col1, col2, col3 = st.columns(3)
+    st.subheader("📊 Dashboard Summary")
 
+    col1, col2, col3 = st.columns(3)
     col1.metric("Total Students", len(df))
-    col2.metric("Avg SRI", round(df["SRI"].mean(), 2))
-    col3.metric("High Risk", (df["Risk_Level"] == "High Risk").sum())
+    col2.metric("Average SRI", round(df["SRI"].mean(), 2))
+    col3.metric("High Risk Students", (df["Risk_Level"] == "High Risk").sum())
 
     # ---------------- CHART ----------------
     st.subheader("📊 Risk Distribution")
 
     fig, ax = plt.subplots()
     df["Risk_Level"].value_counts().plot(kind="bar", ax=ax)
+    ax.set_xlabel("Risk Level")
+    ax.set_ylabel("Number of Students")
 
     st.pyplot(fig)
 
     # ---------------- DOWNLOAD ----------------
-    csv = df.to_csv(index=False).encode('utf-8')
+    st.subheader("⬇ Download Report")
+
+    csv = df.to_csv(index=False).encode("utf-8")
 
     st.download_button(
-        "Download Report",
+        label="Download Final Report",
         data=csv,
-        file_name="final_report.csv",
+        file_name="mentoring_report.csv",
         mime="text/csv"
     )
 
 else:
-    st.info("Upload dataset to start")
+    st.info("👈 Please upload BOTH student and mentor datasets to proceed.")
